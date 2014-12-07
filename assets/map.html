@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Place searches</title>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <style>
+            html, body, #map-canvas {
+                height: 100%;
+                margin: 0px;
+                padding: 0px
+            } 
+        </style>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"></script>
+        <script>
+            var map;
+            var infowindow;
+            var homeLocation;
+            var bounds_taiwan = new google.maps.LatLngBounds(
+            	      new google.maps.LatLng(25.351305, 119.875560),
+            	      new google.maps.LatLng(21.879169, 122.171703));
+            	 
+            
+            function initialize(lat, lng) {
+            	homeLocation = new google.maps.LatLng(lat, lng);
+                map = new google.maps.Map(document.getElementById('map-canvas'), {
+                    center: homeLocation,
+                    zoom: 15
+                });
+                map.fitBounds(bounds_taiwan);
+                
+                var homeMarker = new google.maps.Marker({
+                    map: map,
+                    position: homeLocation
+                });
+                
+                var homeInfo = new google.maps.InfoWindow({
+                    content: "This is my home."
+                });
+
+                google.maps.event.addListener(homeMarker, 'click', function() {
+                	homeInfo.open(map, this);
+                });
+            }
+            
+            function goSearch(place) {  	
+            	var str = place;
+            	var request = {
+            		bounds: bounds_taiwan,
+            		query: str
+            	};
+                infowindow = new google.maps.InfoWindow();
+                var service = new google.maps.places.PlacesService(map);
+                service.textSearch(request, callback);
+            }
+
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    for (var i = 0; i < results.length; i++) {
+                        createMarker(results[i]);
+                        map.setCenter(results[i].geometry.location);
+                    }
+                    
+                    /*map = new google.maps.Map(document.getElementById('map-canvas'), {
+                        center: results[0].geometry.location,
+                        zoom: 16
+                    });*/
+                }
+            }
+
+            function createMarker(place) {
+                var placeLoc = place.geometry.location;
+                var marker = new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location
+                });
+
+                google.maps.event.addListener(marker, 'click', function() {
+                    infowindow.setContent(place.name);
+                    infowindow.open(map, this);
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <div id="map-canvas"></div>
+    </body>   
+</html>

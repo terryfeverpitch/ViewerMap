@@ -2,23 +2,30 @@ package google.map.viewermap;
 
 import google.map.viewermap.adapter.NavDrawerListAdapter;
 import google.map.viewermap.model.NavDrawerItem;
+import google.map.viewermap.ui.MapView;
 
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class MapActivity extends Activity {
 
@@ -39,6 +46,8 @@ public class MapActivity extends Activity {
 	private ArrayList<NavDrawerItem> navDrawerItems;
 	private NavDrawerListAdapter adapter;
 
+	private MapFragment mapFragment;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -59,19 +68,10 @@ public class MapActivity extends Activity {
 		navDrawerItems = new ArrayList<NavDrawerItem>();
 
 		// adding nav drawer items to array
-		// Home
 		navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-		// Find People
 		navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(1, -1)));
-		// Photos
 		navDrawerItems.add(new NavDrawerItem(navMenuTitles[2], navMenuIcons.getResourceId(2, -1)));
-		// Communities, Will add a counter here
-		navDrawerItems.add(new NavDrawerItem(navMenuTitles[3], navMenuIcons.getResourceId(3, -1), true, "22"));
-		// Pages
-		navDrawerItems.add(new NavDrawerItem(navMenuTitles[4], navMenuIcons.getResourceId(4, -1)));
-		// What's hot, We  will add a counter here
-		navDrawerItems.add(new NavDrawerItem(navMenuTitles[5], navMenuIcons.getResourceId(5, -1), true, "50+"));
-		
+		navDrawerItems.add(new NavDrawerItem(navMenuTitles[3], navMenuIcons.getResourceId(3, -1)));
 
 		// Recycle the typed array
 		navMenuIcons.recycle();
@@ -79,36 +79,46 @@ public class MapActivity extends Activity {
 		mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
 
 		// setting the nav drawer list adapter
-		adapter = new NavDrawerListAdapter(getApplicationContext(),
-				navDrawerItems);
+		adapter = new NavDrawerListAdapter(getApplicationContext(), navDrawerItems);
 		mDrawerList.setAdapter(adapter);
 
 		// enabling action bar app icon and behaving it as toggle button
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
 
-		mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-				R.drawable.ic_drawer, //nav menu toggle icon
-				R.string.app_name, // nav drawer open - description for accessibility
-				R.string.app_name // nav drawer close - description for accessibility
-		) {
-			public void onDrawerClosed(View view) {
-				getActionBar().setTitle(mTitle);
-				// calling onPrepareOptionsMenu() to show action bar icons
-				invalidateOptionsMenu();
-			}
-
-			public void onDrawerOpened(View drawerView) {
-				getActionBar().setTitle(mDrawerTitle);
-				// calling onPrepareOptionsMenu() to hide action bar icons
-				invalidateOptionsMenu();
-			}
-		};
+		mDrawerToggle = new ActionBarDrawerToggleExtension(this, mDrawerLayout, R.drawable.ic_drawer,
+				R.string.app_name, R.string.app_name // nav drawer close - description for accessibility
+		);
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
 			// on first time display view for first nav item
-			displayView(0);
+			// displayView(0);
+			mapFragment = new MapFragment();
+			FragmentManager fragmentManager = getFragmentManager();
+			fragmentManager.beginTransaction()
+					.replace(R.id.frame_container, mapFragment).commit();
+		}
+	}
+
+	private final class ActionBarDrawerToggleExtension extends ActionBarDrawerToggle {
+		private ActionBarDrawerToggleExtension(Activity activity, 
+				DrawerLayout drawerLayout, int drawerImageRes,
+				int openDrawerContentDescRes, int closeDrawerContentDescRes) {
+			super(activity, drawerLayout, drawerImageRes,
+					openDrawerContentDescRes, closeDrawerContentDescRes);
+		}
+
+		public void onDrawerClosed(View view) {
+			getActionBar().setTitle(mTitle);
+			// calling onPrepareOptionsMenu() to show action bar icons
+			invalidateOptionsMenu();
+		}
+
+		public void onDrawerOpened(View drawerView) {
+			getActionBar().setTitle(mDrawerTitle);
+			// calling onPrepareOptionsMenu() to hide action bar icons
+			invalidateOptionsMenu();
 		}
 	}
 
@@ -120,8 +130,7 @@ public class MapActivity extends Activity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			// display view for selected nav drawer item
-			displayView(position);
+			doFunction(position);
 		}
 	}
 
@@ -157,48 +166,29 @@ public class MapActivity extends Activity {
 		return super.onPrepareOptionsMenu(menu);
 	}
 
-	/**
-	 * Diplaying fragment view for selected nav drawer list item
-	 * */
-	private void displayView(int position) {
-		// update the main content by replacing fragments
-		Fragment fragment = null;
+	private void doFunction(int position) {
 		switch (position) {
 		case 0:
-			fragment = new HomeFragment();
+			final Dialog dialog = createDialog();
+			dialog.setTitle("Search...");
+			dialog.show();
 			break;
 		case 1:
-			fragment = new FindPeopleFragment();
 			break;
 		case 2:
-			fragment = new PhotosFragment();
 			break;
 		case 3:
-			fragment = new CommunityFragment();
 			break;
-		case 4:
-			fragment = new PagesFragment();
-			break;
-		case 5:
-			fragment = new WhatsHotFragment();
-			break;
-
 		default:
 			break;
 		}
 
-		if (fragment != null) {
-			FragmentManager fragmentManager = getFragmentManager();
-			fragmentManager.beginTransaction()
-					.replace(R.id.frame_container, fragment).commit();
-
+		if (mapFragment != null) {
 			// update selected item and title, then close the drawer
-			mDrawerList.setItemChecked(position, true);
 			mDrawerList.setSelection(position);
 			setTitle(navMenuTitles[position]);
 			mDrawerLayout.closeDrawer(mDrawerList);
 		} else {
-			// error in creating fragment
 			Log.e("MainActivity", "Error in creating fragment");
 		}
 	}
@@ -226,6 +216,33 @@ public class MapActivity extends Activity {
 		super.onConfigurationChanged(newConfig);
 		// Pass any configuration change to the drawer toggls
 		mDrawerToggle.onConfigurationChanged(newConfig);
+	}
+	
+	public Dialog createDialog() {
+	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	    // Get the layout inflater
+	    LayoutInflater inflater = this.getLayoutInflater();
+	    View content = inflater.inflate(R.layout.search_dialog, null);
+	    final EditText search_dialog_textbox = (EditText) content.findViewById(R.id.search_dialog_textbox);
+	    // Inflate and set the layout for the dialog
+	    // Pass null as the parent view because its going in the dialog layout
+	    builder.setView(content)
+	    // Add action buttons
+	           .setPositiveButton("Go", new DialogInterface.OnClickListener() {
+	               @Override
+	               public void onClick(DialogInterface dialog, int id) {
+	            	   MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
+	            	   String place = search_dialog_textbox.getText().toString();
+	            	   map_mv_map.goSearch(place);
+	            	   Toast.makeText(MapActivity.this, place,Toast.LENGTH_SHORT).show();
+	               }
+	           })
+	           .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	               public void onClick(DialogInterface dialog, int id) {
+	            	   dialog.cancel();
+	               }
+	           });      
+	    return builder.create();
 	}
 
 }
