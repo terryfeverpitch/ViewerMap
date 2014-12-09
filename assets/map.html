@@ -19,11 +19,100 @@
             var bounds_taiwan = new google.maps.LatLngBounds(
             	      new google.maps.LatLng(25.351305, 119.875560),
             	      new google.maps.LatLng(21.879169, 122.171703));
-            	 
+			var currentPlace;            	 
+            function customZoomControl(controlDiv, map) {
+            	// Set CSS styles for the DIV containing the control
+			  	// Setting padding to 5 px will offset the control
+				// from the edge of the map
+				controlDiv.style.padding = '5px';
+
+			  	// Set CSS for the control border
+			  	var controlUI = document.createElement('div');
+			  	controlUI.overflow = 'hidden';
+			  	controlUI.style.backgroundColor = 'rgba(255, 255, 255, .3)';
+			  	controlUI.style.borderStyle = 'solid';
+			 	controlUI.style.borderWidth = '2px';
+			  	controlUI.style.textAlign = 'center';
+			  	controlDiv.appendChild(controlUI);
+
+			  	// Set CSS for the control interior
+			  	var btn_zoomin = document.createElement('div');
+			  	btn_zoomin.id = "btn_zoomin";
+			  	btn_zoomin.style.fontSize = '32px';
+			  	btn_zoomin.style.paddingLeft = '4px';
+			  	btn_zoomin.style.paddingRight = '4px';
+			  	btn_zoomin.innerHTML = '<b>+</b>';
+			  	controlUI.appendChild(btn_zoomin);
+			  	
+			  	var lbl_text = document.createElement('div');
+			  	lbl_text.style.fontSize = '32px';
+			  	lbl_text.style.paddingLeft = '4px';
+			  	lbl_text.style.paddingRight = '4px';
+			  	lbl_text.innerHTML = '<b>Zoom</b>';
+			  	controlUI.appendChild(lbl_text);
+			  	
+			  	var btn_zoomout = document.createElement('div');
+			  	btn_zoomin.id = "btn_zoomout";
+			  	btn_zoomout.style.fontSize = '32px';
+			  	btn_zoomout.style.paddingLeft = '4px';
+			  	btn_zoomout.style.paddingRight = '4px';
+			  	btn_zoomout.innerHTML = '<b>-</b>';
+			  	controlUI.appendChild(btn_zoomout);
+				
+			  	btn_zoomin.onclick = function() {
+			  		var zoomLevel = map.getZoom();
+			  		map.setZoom(zoomLevel + 1);
+			  	};
+			  	
+			  	btn_zoomout.onclick = function() {
+			  		var zoomLevel = map.getZoom();
+			  		map.setZoom(zoomLevel - 1);
+			  	};
+			  	// Setup the click event listeners: simply set the map to HOME
+			  	/*google.maps.event.addDomListener(btn_zoomin, 'click', function() {
+			  		var zoomLevel = map.getZoom();
+			  		map.setZoom(zoomLevel + 1);
+			  	});*/
+            }
             
+			function HomeControl(controlDiv, map) {
+				// Set CSS styles for the DIV containing the control
+			  	// Setting padding to 5 px will offset the control
+				// from the edge of the map
+				controlDiv.style.padding = '5px';
+
+			  	// Set CSS for the control border
+			  	var controlUI = document.createElement('div');
+			  	controlUI.style.backgroundColor = 'rgba(255, 255, 255, .3)';
+			  	controlUI.style.borderStyle = 'solid';
+			 	controlUI.style.borderWidth = '2px';
+			  	controlUI.style.cursor = 'pointer';
+			  	controlUI.style.textAlign = 'center';
+			  	controlDiv.appendChild(controlUI);
+
+			  	// Set CSS for the control interior
+			  	var controlText = document.createElement('div');
+			  	controlText.style.fontSize = '24px';
+			  	controlText.style.paddingLeft = '4px';
+			  	controlText.style.paddingRight = '4px';
+			  	controlText.innerHTML = '<b>Home</b>';
+			  	controlUI.appendChild(controlText);
+
+			  	// Setup the click event listeners: simply set the map to HOME
+			  	google.maps.event.addDomListener(controlUI, 'click', function() {
+			    	map.setCenter(homeLocation)
+			  	});
+			}
+
             function initialize(lat, lng) {
             	homeLocation = new google.maps.LatLng(lat, lng);
+            	currentPlace = {
+            		geometry: {
+            			location: homeLocation
+            		}
+            	};
                 map = new google.maps.Map(document.getElementById('map-canvas'), {
+                	disableDefaultUI: true,
                     center: homeLocation,
                     zoom: 15
                 });
@@ -37,10 +126,28 @@
                 var homeInfo = new google.maps.InfoWindow({
                     content: "This is my home."
                 });
-
+                
+             	// Create the DIV to hold the control and
+                // call the HomeControl() constructor passing
+                // in this DIV.
+                var homeControlDiv = document.createElement('div');
+                var homeControl = new HomeControl(homeControlDiv, map);
+                homeControlDiv.index = 1;
+                map.controls[google.maps.ControlPosition.TOP_RIGHT].push(homeControlDiv);
+                
+                var zoomControlDiv = document.createElement('div');
+                var zoomControl = new customZoomControl(zoomControlDiv, map);
+                zoomControlDiv.index = 2;
+                map.controls[google.maps.ControlPosition.TOP_LEFT].push(zoomControlDiv);
+                
                 google.maps.event.addListener(homeMarker, 'click', function() {
                 	homeInfo.open(map, this);
                 });
+                
+                //google.maps.event.addListener(map, 'zoom_changed', function() {
+                    //map.setCenter(currentPlace.geometry.location);
+                    // infowindow.setContent('Zoom: ' + zoomLevel);
+                //});
             }
             
             function goSearch(place) {  	
@@ -56,11 +163,12 @@
 
             function callback(results, status) {
                 if (status == google.maps.places.PlacesServiceStatus.OK) {
-                    for (var i = 0; i < results.length; i++) {
-                        createMarker(results[i]);
-                        map.setCenter(results[i].geometry.location);
-                    }
-                    
+                    /*for (var i = 0; i < results.length; i++) {
+                        createMarker(results[i]);        
+                    }*/
+                    var bounds = new google.maps.LatLngBounds();
+                    currentPlace = results[0];
+                    map.setCenter(results[0].geometry.location, 17);
                     /*map = new google.maps.Map(document.getElementById('map-canvas'), {
                         center: results[0].geometry.location,
                         zoom: 16
@@ -68,15 +176,14 @@
                 }
             }
 
-            function createMarker(place) {
-                var placeLoc = place.geometry.location;
+            function createMarker() {
                 var marker = new google.maps.Marker({
                     map: map,
-                    position: place.geometry.location
+                    position: currentPlace.geometry.location
                 });
 
                 google.maps.event.addListener(marker, 'click', function() {
-                    infowindow.setContent(place.name);
+                    infowindow.setContent(currentPlace.name);
                     infowindow.open(map, this);
                 });
             }

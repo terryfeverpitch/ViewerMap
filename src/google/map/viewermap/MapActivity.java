@@ -93,7 +93,6 @@ public class MapActivity extends Activity {
 
 		if (savedInstanceState == null) {
 			// on first time display view for first nav item
-			// displayView(0);
 			mapFragment = new MapFragment();
 			FragmentManager fragmentManager = getFragmentManager();
 			fragmentManager.beginTransaction()
@@ -174,6 +173,7 @@ public class MapActivity extends Activity {
 			dialog.show();
 			break;
 		case 1:
+			
 			break;
 		case 2:
 			break;
@@ -185,19 +185,19 @@ public class MapActivity extends Activity {
 
 		if (mapFragment != null) {
 			// update selected item and title, then close the drawer
-			mDrawerList.setSelection(position);
-			setTitle(navMenuTitles[position]);
+//			mDrawerList.setSelection(position);
+//			setTitle(navMenuTitles[position]);
 			mDrawerLayout.closeDrawer(mDrawerList);
 		} else {
 			Log.e("MainActivity", "Error in creating fragment");
 		}
 	}
 
-	@Override
-	public void setTitle(CharSequence title) {
-		mTitle = title;
-		getActionBar().setTitle(mTitle);
-	}
+//	@Override
+//	public void setTitle(CharSequence title) {
+//		mTitle = title;
+//		getActionBar().setTitle(mTitle);
+//	}
 
 	/**
 	 * When using the ActionBarDrawerToggle, you must call it during
