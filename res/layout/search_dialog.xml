@@ -10,5 +10,11 @@
         android:layout_height="wrap_content"
         android:hint="find place ..."
         android:inputType="text" />
+
+    <ListView
+        android:id="@+id/search_dialog_lv_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
     
 </LinearLayout>

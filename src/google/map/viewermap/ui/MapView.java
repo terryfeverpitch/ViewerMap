@@ -1,19 +1,18 @@
 package google.map.viewermap.ui;
 
+import java.util.ArrayList;
+
 import android.graphics.Bitmap;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-public class MapView extends WebView {
-	public final static int HOME_CODE = 0;
-	public final static int SCHOOL_CODE = 1;
-	
-	private int currentPlaceCode = HOME_CODE;
-	
+public class MapView extends WebView {	
 	private String MAP_URL = "file:///android_asset/map.html";
 	private boolean loaded = false;
+	private ArrayList<String> searchHistory = new ArrayList<String>();
+	
 	private WebViewClient client = new WebViewClient() {
 		@Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {          
@@ -55,18 +54,16 @@ public class MapView extends WebView {
 //		loadUrl("javascript:searchFood()");
 //		MapActivity.progressdialog.dismiss();
 		loadUrl("javascript:goSearch('" + place + "')");
+		if(!searchHistory.contains(place))
+			searchHistory.add(place);
 	}
 	
-	public void gotoPlace(int where) {
-		currentPlaceCode = where;
-		if(where == HOME_CODE)
-			loadUrl("javascript:initialize(25.074378, 121.661085)");
-		else if(where == SCHOOL_CODE)
-			loadUrl("javascript:initialize(25.066884, 121.522144)");
+	public ArrayList<String> getHistory() {
+		return searchHistory;
 	}
 	
-	public int getCurrentPlace() {
-		return currentPlaceCode;
+	public void markPlace() {
+		loadUrl("javascript:createMarker()");
 	}
 
 	public boolean isReady() {

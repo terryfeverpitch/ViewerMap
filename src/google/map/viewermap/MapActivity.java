@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -173,7 +174,8 @@ public class MapActivity extends Activity {
 			dialog.show();
 			break;
 		case 1:
-			
+			MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
+			map_mv_map.markPlace();
 			break;
 		case 2:
 			break;
@@ -224,6 +226,28 @@ public class MapActivity extends Activity {
 	    LayoutInflater inflater = this.getLayoutInflater();
 	    View content = inflater.inflate(R.layout.search_dialog, null);
 	    final EditText search_dialog_textbox = (EditText) content.findViewById(R.id.search_dialog_textbox);
+	    
+	    final MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
+	    final ListView search_dialog_lv_history = (ListView) content.findViewById(R.id.search_dialog_lv_history);
+        //TextView tv = (TextView) rootView.findViewById(R.id.textView1);
+        
+        //tv.setText(songsList.size() + ", " + songManager.MEDIA_PATH);
+		ArrayList<String> historyList = map_mv_map.getHistory();
+		if(!historyList.isEmpty()) {
+			ArrayAdapter listAdapter = new ArrayAdapter<String>(content.getContext(), android.R.layout.simple_list_item_activated_1, historyList);
+	        
+			search_dialog_lv_history.setSelected(true);
+			search_dialog_lv_history.setAdapter(listAdapter);
+			search_dialog_lv_history.setOnItemClickListener(new AdapterView.OnItemClickListener () {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view,
+						int position, long id) {
+					Object listItem = search_dialog_lv_history.getItemAtPosition(position);
+					search_dialog_textbox.setText(listItem.toString());
+				}
+				
+			});				
+		}
 	    // Inflate and set the layout for the dialog
 	    // Pass null as the parent view because its going in the dialog layout
 	    builder.setView(content)
@@ -231,7 +255,6 @@ public class MapActivity extends Activity {
 	           .setPositiveButton("Go", new DialogInterface.OnClickListener() {
 	               @Override
 	               public void onClick(DialogInterface dialog, int id) {
-	            	   MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
 	            	   String place = search_dialog_textbox.getText().toString();
 	            	   map_mv_map.goSearch(place);
 	            	   Toast.makeText(MapActivity.this, place,Toast.LENGTH_SHORT).show();
@@ -244,5 +267,4 @@ public class MapActivity extends Activity {
 	           });      
 	    return builder.create();
 	}
-
 }

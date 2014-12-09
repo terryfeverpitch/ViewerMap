@@ -1,13 +1,27 @@
-html { 
-    height: 100% 
+html, body, #map-canvas {
+	height: 100%;
+    margin: 0px;
+    padding: 0px
+} 
+
+#btn_home {
+	
 }
 
-body { 
-    height: 100%; 
-    margin: 0; 
-    padding: 0 
+#control_container {
+	margin: 5px;
+	display: inline-block;
+  	background-color: rgba(255, 255, 255, .3);
+	border: 2px solid;
+	textAlign: center;
 }
 
-#map_canvas { 
-    height: 100% 
+#btn_zoomin, #btn_zoomout {
+	background-color: rgba(255, 255, 255, 0);
+	display: inline-block;
+	font-size: 36px
+}
+
+#btn_zoomin:active, #btn_zoomout:active {
+	background-color: rgba(125, 255, 255, .3);
 }

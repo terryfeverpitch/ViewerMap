@@ -4,13 +4,7 @@
         <title>Place searches</title>
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
         <meta charset="utf-8">
-        <style>
-            html, body, #map-canvas {
-                height: 100%;
-                margin: 0px;
-                padding: 0px
-            } 
-        </style>
+        <link rel=stylesheet type="text/css" href="style.css">
         <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"></script>
         <script>
             var map;
@@ -21,43 +15,17 @@
             	      new google.maps.LatLng(21.879169, 122.171703));
 			var currentPlace;            	 
             function customZoomControl(controlDiv, map) {
-            	// Set CSS styles for the DIV containing the control
-			  	// Setting padding to 5 px will offset the control
-				// from the edge of the map
-				controlDiv.style.padding = '5px';
-
-			  	// Set CSS for the control border
-			  	var controlUI = document.createElement('div');
-			  	controlUI.overflow = 'hidden';
-			  	controlUI.style.backgroundColor = 'rgba(255, 255, 255, .3)';
-			  	controlUI.style.borderStyle = 'solid';
-			 	controlUI.style.borderWidth = '2px';
-			  	controlUI.style.textAlign = 'center';
-			  	controlDiv.appendChild(controlUI);
-
-			  	// Set CSS for the control interior
+            	controlDiv.id = "control_container"
+			  
 			  	var btn_zoomin = document.createElement('div');
 			  	btn_zoomin.id = "btn_zoomin";
-			  	btn_zoomin.style.fontSize = '32px';
-			  	btn_zoomin.style.paddingLeft = '4px';
-			  	btn_zoomin.style.paddingRight = '4px';
-			  	btn_zoomin.innerHTML = '<b>+</b>';
-			  	controlUI.appendChild(btn_zoomin);
-			  	
-			  	var lbl_text = document.createElement('div');
-			  	lbl_text.style.fontSize = '32px';
-			  	lbl_text.style.paddingLeft = '4px';
-			  	lbl_text.style.paddingRight = '4px';
-			  	lbl_text.innerHTML = '<b>Zoom</b>';
-			  	controlUI.appendChild(lbl_text);
+			  	btn_zoomin.innerHTML = '<b>+Zo</b>';
+			  	controlDiv.appendChild(btn_zoomin);
 			  	
 			  	var btn_zoomout = document.createElement('div');
-			  	btn_zoomin.id = "btn_zoomout";
-			  	btn_zoomout.style.fontSize = '32px';
-			  	btn_zoomout.style.paddingLeft = '4px';
-			  	btn_zoomout.style.paddingRight = '4px';
-			  	btn_zoomout.innerHTML = '<b>-</b>';
-			  	controlUI.appendChild(btn_zoomout);
+			  	btn_zoomout.id = "btn_zoomout";
+			  	btn_zoomout.innerHTML = '<b>om-</b>';
+			  	controlDiv.appendChild(btn_zoomout);
 				
 			  	btn_zoomin.onclick = function() {
 			  		var zoomLevel = map.getZoom();
@@ -68,11 +36,6 @@
 			  		var zoomLevel = map.getZoom();
 			  		map.setZoom(zoomLevel - 1);
 			  	};
-			  	// Setup the click event listeners: simply set the map to HOME
-			  	/*google.maps.event.addDomListener(btn_zoomin, 'click', function() {
-			  		var zoomLevel = map.getZoom();
-			  		map.setZoom(zoomLevel + 1);
-			  	});*/
             }
             
 			function HomeControl(controlDiv, map) {
@@ -109,7 +72,8 @@
             	currentPlace = {
             		geometry: {
             			location: homeLocation
-            		}
+            		},
+            		name: "this is my home."
             	};
                 map = new google.maps.Map(document.getElementById('map-canvas'), {
                 	disableDefaultUI: true,
@@ -117,7 +81,7 @@
                     zoom: 15
                 });
                 map.fitBounds(bounds_taiwan);
-                
+                /*
                 var homeMarker = new google.maps.Marker({
                     map: map,
                     position: homeLocation
@@ -126,7 +90,7 @@
                 var homeInfo = new google.maps.InfoWindow({
                     content: "This is my home."
                 });
-                
+                */
              	// Create the DIV to hold the control and
                 // call the HomeControl() constructor passing
                 // in this DIV.
@@ -140,13 +104,8 @@
                 zoomControlDiv.index = 2;
                 map.controls[google.maps.ControlPosition.TOP_LEFT].push(zoomControlDiv);
                 
-                google.maps.event.addListener(homeMarker, 'click', function() {
-                	homeInfo.open(map, this);
-                });
-                
-                //google.maps.event.addListener(map, 'zoom_changed', function() {
-                    //map.setCenter(currentPlace.geometry.location);
-                    // infowindow.setContent('Zoom: ' + zoomLevel);
+                //google.maps.event.addListener(homeMarker, 'click', function() {
+                //	homeInfo.open(map, this);
                 //});
             }
             
@@ -156,7 +115,6 @@
             		bounds: bounds_taiwan,
             		query: str
             	};
-                infowindow = new google.maps.InfoWindow();
                 var service = new google.maps.places.PlacesService(map);
                 service.textSearch(request, callback);
             }
@@ -168,15 +126,13 @@
                     }*/
                     var bounds = new google.maps.LatLngBounds();
                     currentPlace = results[0];
-                    map.setCenter(results[0].geometry.location, 17);
-                    /*map = new google.maps.Map(document.getElementById('map-canvas'), {
-                        center: results[0].geometry.location,
-                        zoom: 16
-                    });*/
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(13);
                 }
             }
 
             function createMarker() {
+            	infowindow = new google.maps.InfoWindow();
                 var marker = new google.maps.Marker({
                     map: map,
                     position: currentPlace.geometry.location
