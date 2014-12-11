@@ -5,10 +5,10 @@
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
         <meta charset="utf-8">
         <link rel=stylesheet type="text/css" href="style.css">
-        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&language=ch"></script>
         <script>
             var map;
-            var infowindow;
+            var records = [];
             var homeLocation;
             var bounds_taiwan = new google.maps.LatLngBounds(
             	      new google.maps.LatLng(25.351305, 119.875560),
@@ -75,22 +75,14 @@
             		},
             		name: "this is my home."
             	};
+            	
                 map = new google.maps.Map(document.getElementById('map-canvas'), {
                 	disableDefaultUI: true,
                     center: homeLocation,
                     zoom: 15
                 });
                 map.fitBounds(bounds_taiwan);
-                /*
-                var homeMarker = new google.maps.Marker({
-                    map: map,
-                    position: homeLocation
-                });
-                
-                var homeInfo = new google.maps.InfoWindow({
-                    content: "This is my home."
-                });
-                */
+  
              	// Create the DIV to hold the control and
                 // call the HomeControl() constructor passing
                 // in this DIV.
@@ -102,11 +94,7 @@
                 var zoomControlDiv = document.createElement('div');
                 var zoomControl = new customZoomControl(zoomControlDiv, map);
                 zoomControlDiv.index = 2;
-                map.controls[google.maps.ControlPosition.TOP_LEFT].push(zoomControlDiv);
-                
-                //google.maps.event.addListener(homeMarker, 'click', function() {
-                //	homeInfo.open(map, this);
-                //});
+                map.controls[google.maps.ControlPosition.TOP_LEFT].push(zoomControlDiv);     
             }
             
             function goSearch(place) {  	
@@ -121,27 +109,34 @@
 
             function callback(results, status) {
                 if (status == google.maps.places.PlacesServiceStatus.OK) {
-                    /*for (var i = 0; i < results.length; i++) {
-                        createMarker(results[i]);        
-                    }*/
                     var bounds = new google.maps.LatLngBounds();
                     currentPlace = results[0];
                     map.setCenter(results[0].geometry.location);
-                    map.setZoom(13);
+                    map.setZoom(18);
                 }
             }
 
             function createMarker() {
-            	infowindow = new google.maps.InfoWindow();
+            	var infowindow = new google.maps.InfoWindow();
+            	infowindow.setContent(currentPlace.name);
                 var marker = new google.maps.Marker({
                     map: map,
                     position: currentPlace.geometry.location
                 });
 
                 google.maps.event.addListener(marker, 'click', function() {
-                    infowindow.setContent(currentPlace.name);
                     infowindow.open(map, this);
                 });
+            }
+            
+            function focus(index) {
+            	 map.setCenter(records[index].geometry.location);
+            }
+    
+            function getPlaceInfo() {
+            	records.push(currentPlace);
+            	window.getJsVar.sendPlaceInfo(currentPlace.name, 
+            			currentPlace.geometry.location.lat(), currentPlace.geometry.location.lng());
             }
         </script>
     </head>

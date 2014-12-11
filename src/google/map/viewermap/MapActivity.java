@@ -12,6 +12,7 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -148,7 +149,16 @@ public class MapActivity extends Activity {
 		}
 		// Handle action bar actions click
 		switch (item.getItemId()) {
-		case R.id.action_settings:
+		case R.id.action_records:
+			MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
+			ArrayList<MapView.Place> records = map_mv_map.getRecords();
+			Intent intent = new Intent();
+    		intent.setClass(MapActivity.this, RecordsActivity.class);
+    		
+    		Bundle bundle = new Bundle();
+    		bundle.putSerializable("records_list", records);
+    		intent.putExtras(bundle);	    		
+    		startActivity(intent);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -162,11 +172,12 @@ public class MapActivity extends Activity {
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		// if nav drawer is opened, hide the action items
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
+		menu.findItem(R.id.action_records).setVisible(!drawerOpen);
 		return super.onPrepareOptionsMenu(menu);
 	}
 
 	private void doFunction(int position) {
+		MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
 		switch (position) {
 		case 0:
 			final Dialog dialog = createDialog();
@@ -174,33 +185,22 @@ public class MapActivity extends Activity {
 			dialog.show();
 			break;
 		case 1:
-			MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
 			map_mv_map.markPlace();
 			break;
 		case 2:
-			break;
-		case 3:
+			map_mv_map.recordPlace();
 			break;
 		default:
 			break;
 		}
 
 		if (mapFragment != null) {
-			// update selected item and title, then close the drawer
-//			mDrawerList.setSelection(position);
-//			setTitle(navMenuTitles[position]);
 			mDrawerLayout.closeDrawer(mDrawerList);
 		} else {
 			Log.e("MainActivity", "Error in creating fragment");
 		}
 	}
-
-//	@Override
-//	public void setTitle(CharSequence title) {
-//		mTitle = title;
-//		getActionBar().setTitle(mTitle);
-//	}
-
+	
 	/**
 	 * When using the ActionBarDrawerToggle, you must call it during
 	 * onPostCreate() and onConfigurationChanged()...
@@ -226,15 +226,12 @@ public class MapActivity extends Activity {
 	    LayoutInflater inflater = this.getLayoutInflater();
 	    View content = inflater.inflate(R.layout.search_dialog, null);
 	    final EditText search_dialog_textbox = (EditText) content.findViewById(R.id.search_dialog_textbox);
-	    
 	    final MapView map_mv_map = (MapView)mapFragment.getRootView().findViewById(R.id.map_mv_map);
 	    final ListView search_dialog_lv_history = (ListView) content.findViewById(R.id.search_dialog_lv_history);
-        //TextView tv = (TextView) rootView.findViewById(R.id.textView1);
-        
-        //tv.setText(songsList.size() + ", " + songManager.MEDIA_PATH);
 		ArrayList<String> historyList = map_mv_map.getHistory();
+		
 		if(!historyList.isEmpty()) {
-			ArrayAdapter listAdapter = new ArrayAdapter<String>(content.getContext(), android.R.layout.simple_list_item_activated_1, historyList);
+			ArrayAdapter listAdapter = new ArrayAdapter<String>(content.getContext(), android.R.layout.simple_list_item_1, historyList);
 	        
 			search_dialog_lv_history.setSelected(true);
 			search_dialog_lv_history.setAdapter(listAdapter);
@@ -245,7 +242,6 @@ public class MapActivity extends Activity {
 					Object listItem = search_dialog_lv_history.getItemAtPosition(position);
 					search_dialog_textbox.setText(listItem.toString());
 				}
-				
 			});				
 		}
 	    // Inflate and set the layout for the dialog
