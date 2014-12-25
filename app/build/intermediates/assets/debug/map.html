@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Place searches</title>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <link rel=stylesheet type="text/css" href="style.css">
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&language=ch"></script>
+        <script>
+            var map;
+            var records = [];
+            var homeLocation;
+            var bounds_taiwan = new google.maps.LatLngBounds(
+            	      new google.maps.LatLng(25.351305, 119.875560),
+            	      new google.maps.LatLng(21.879169, 122.171703));
+			var currentPlace;            	 
+            function customZoomControl(controlDiv, map) {
+            	controlDiv.id = "control_container"
+			  
+			  	var btn_zoomin = document.createElement('div');
+			  	btn_zoomin.id = "btn_zoomin";
+			  	btn_zoomin.innerHTML = '<b>+Zo</b>';
+			  	controlDiv.appendChild(btn_zoomin);
+			  	
+			  	var btn_zoomout = document.createElement('div');
+			  	btn_zoomout.id = "btn_zoomout";
+			  	btn_zoomout.innerHTML = '<b>om-</b>';
+			  	controlDiv.appendChild(btn_zoomout);
+				
+			  	btn_zoomin.onclick = function() {
+			  		var zoomLevel = map.getZoom();
+			  		map.setZoom(zoomLevel + 1);
+			  	};
+			  	
+			  	btn_zoomout.onclick = function() {
+			  		var zoomLevel = map.getZoom();
+			  		map.setZoom(zoomLevel - 1);
+			  	};
+            }
+            
+			function HomeControl(controlDiv, map) {
+				// Set CSS styles for the DIV containing the control
+			  	// Setting padding to 5 px will offset the control
+				// from the edge of the map
+				controlDiv.style.padding = '5px';
+
+			  	// Set CSS for the control border
+			  	var controlUI = document.createElement('div');
+			  	controlUI.style.backgroundColor = 'rgba(255, 255, 255, .3)';
+			  	controlUI.style.borderStyle = 'solid';
+			 	controlUI.style.borderWidth = '2px';
+			  	controlUI.style.cursor = 'pointer';
+			  	controlUI.style.textAlign = 'center';
+			  	controlDiv.appendChild(controlUI);
+
+			  	// Set CSS for the control interior
+			  	var controlText = document.createElement('div');
+			  	controlText.style.fontSize = '24px';
+			  	controlText.style.paddingLeft = '4px';
+			  	controlText.style.paddingRight = '4px';
+			  	controlText.innerHTML = '<b>Home</b>';
+			  	controlUI.appendChild(controlText);
+
+			  	// Setup the click event listeners: simply set the map to HOME
+			  	google.maps.event.addDomListener(controlUI, 'click', function() {
+			    	map.setCenter(homeLocation)
+			  	});
+			}
+
+            function initialize(lat, lng) {
+            	homeLocation = new google.maps.LatLng(lat, lng);
+            	currentPlace = {
+            		geometry: {
+            			location: homeLocation
+            		},
+            		name: "this is my home."
+            	};
+            	
+                map = new google.maps.Map(document.getElementById('map-canvas'), {
+                	disableDefaultUI: true,
+                    center: homeLocation,
+                    zoom: 15
+                });
+                map.fitBounds(bounds_taiwan);
+  
+             	// Create the DIV to hold the control and
+                // call the HomeControl() constructor passing
+                // in this DIV.
+                var homeControlDiv = document.createElement('div');
+                var homeControl = new HomeControl(homeControlDiv, map);
+                homeControlDiv.index = 1;
+                map.controls[google.maps.ControlPosition.TOP_RIGHT].push(homeControlDiv);
+                
+                var zoomControlDiv = document.createElement('div');
+                var zoomControl = new customZoomControl(zoomControlDiv, map);
+                zoomControlDiv.index = 2;
+                map.controls[google.maps.ControlPosition.TOP_LEFT].push(zoomControlDiv);     
+            }
+            
+            function goSearch(place) {  	
+            	var str = place;
+            	var request = {
+            		bounds: bounds_taiwan,
+            		query: str
+            	};
+                var service = new google.maps.places.PlacesService(map);
+                service.textSearch(request, callback);
+            }
+
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    var bounds = new google.maps.LatLngBounds();
+                    currentPlace = results[0];
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(18);
+                }
+            }
+
+            function createMarker() {
+            	var infowindow = new google.maps.InfoWindow();
+            	infowindow.setContent(currentPlace.name);
+                var marker = new google.maps.Marker({
+                    map: map,
+                    position: currentPlace.geometry.location
+                });
+
+                google.maps.event.addListener(marker, 'click', function() {
+                    infowindow.open(map, this);
+                });
+            }
+            
+            function focus(index) {
+            	 map.setCenter(records[index].geometry.location);
+            }
+    
+            function getPlaceInfo() {
+            	records.push(currentPlace);
+            	window.getJsVar.sendPlaceInfo(currentPlace.name, 
+            			currentPlace.geometry.location.lat(), currentPlace.geometry.location.lng());
+            }
+        </script>
+    </head>
+    <body>
+        <div id="map-canvas"></div>
+    </body>   
+</html>

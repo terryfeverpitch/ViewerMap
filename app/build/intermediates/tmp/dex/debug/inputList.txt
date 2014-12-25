@@ -1,0 +1,4 @@
+/home/terry/android/android-workspace/ViewerMap/app/build/intermediates/classes/debug
+/home/terry/android/android-workspace/ViewerMap/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-ac506e905fe985bbbae9bc9ecef90d3e1e5fd769.jar
+/home/terry/android/android-workspace/ViewerMap/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-f9378bbd6feb930e50fdbaa3c08d1a4a0556f2a5.jar
+/home/terry/android/android-workspace/ViewerMap/app/build/intermediates/pre-dexed/debug/classes-e794d2f2a62a05461deafb1de81704ea733d8e3e.jar
